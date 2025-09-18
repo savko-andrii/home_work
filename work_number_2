@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node 
+{
+    int data;
+    struct Node* next;
+} Node;
+
+Node* createNode(int x)
+{
+    Node* p = (Node*)malloc(sizeof(Node));
+    p->data = x;
+    p->next = NULL;
+    return p;
+}
+
+Node* createListRec(int n) 
+{
+    if (n <= 0) return NULL;
+
+    int x;
+    printf("Введіть число: ");
+    scanf("%d", &x);
+
+    Node* head = createNode(x);
+    head->next = createListRec(n - 1);
+    return head;
+}
+
+void printListRec(Node* head)
+{
+    if (head == NULL)
+    {
+        printf("NULL\n");
+        return;
+    }
+    printf("%d -> ", head->data);
+    printListRec(head->next);
+}
+
+void insertAfterRec(Node* head, int key, int value)
+{
+    if (head == NULL) 
+    {
+        printf("Не знайшов елемент %d\n", key);
+        return;
+    }
+    if (head->data == key) 
+    {
+        Node* p = createNode(value);
+        p->next = head->next;
+        head->next = p;
+        return;
+    }
+    insertAfterRec(head->next, key, value);
+}
+
+void insertBeforeRec(Node** head, int key, int value) 
+{
+    if (*head == NULL)
+    {
+        printf("Не знайшов елемент %d\n", key);
+        return;
+    }
+    if ((*head)->data == key) 
+    {
+        Node* p = createNode(value);
+        p->next = *head;
+        *head = p;
+        return;
+    }
+    insertBeforeRec(&((*head)->next), key, value);
+}
+
+void freeListRec(Node* head)
+{
+    if (head == NULL) return;
+    freeListRec(head->next);
+    free(head);
+}
+
+int main()
+{
+    int n;
+    printf("Скільки елементів у списку? ");
+    scanf("%d", &n);
+
+    Node* head = createListRec(n);
+    printListRec(head);
+
+    insertAfterRec(head, 2, 99);
+    printListRec(head);
+
+    insertBeforeRec(&head, 2, 77);
+    printListRec(head);
+
+    freeListRec(head);
+
+    return 0;
+}
