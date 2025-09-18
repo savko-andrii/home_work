@@ -15,7 +15,6 @@ Node* createNode(int x)
     return p;
 }
 
-// рекурсивне створення списку
 Node* createListRec(int n) 
 {
     if (n <= 0) return NULL;
@@ -25,7 +24,7 @@ Node* createListRec(int n)
     scanf("%d", &x);
 
     Node* head = createNode(x);
-    head->next = createListRec(n - 1); // рекурсивно створюємо решту
+    head->next = createListRec(n - 1);
     return head;
 }
 
