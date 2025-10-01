@@ -1,0 +1,93 @@
+#include <iostream>
+using namespace std;
+
+struct Node
+{
+    int data;        
+    Node* left;       
+    Node* right;      
+    Node(int val)
+    {
+        data = val;
+        left = NULL;
+        right = NULL;
+    }
+};
+
+void inorder(Node* root)
+{
+    if (root == NULL) return;
+    inorder(root->left);
+    cout << root->data << " ";
+    inorder(root->right);
+}
+
+void reverseOrder(Node* root)
+{
+    if (root == NULL) return;
+    reverseOrder(root->right);
+    cout << root->data << " ";
+    reverseOrder(root->left);
+}
+
+bool isMirror(Node* a, Node* b)
+{
+    if (a == NULL && b == NULL) return true;
+    if (a == NULL || b == NULL) return false;
+    if (a->data != b->data) return false;
+
+    return isMirror(a->left, b->right) && isMirror(a->right, b->left);
+}
+
+bool isSymmetric(Node* root) 
+{
+    if (root == NULL) return true;
+    return isMirror(root->left, root->right);
+}
+
+int height(Node* root)
+{
+    if (root == NULL) return 0;
+    int hLeft = height(root->left);
+    int hRight = height(root->right);
+    if (hLeft > hRight) return hLeft + 1;
+    else return hRight + 1;
+}
+
+int findMax(Node* root)
+{
+    if (root == NULL) return -1000000;
+    int leftMax = findMax(root->left);
+    int rightMax = findMax(root->right);
+
+    int m = root->data;
+    if (leftMax > m) m = leftMax;
+    if (rightMax > m) m = rightMax;
+
+    return m;
+}
+
+int main() 
+{
+    Node* root = new Node(5);
+    root->left = new Node(3);
+    root->right = new Node(7);
+    root->left->left = new Node(2);
+    root->left->right = new Node(4);
+    root->right->left = new Node(6);
+    root->right->right = new Node(8);
+
+    cout << "Симетричний обхід: ";
+    inorder(root);
+    cout << endl;
+    cout << "Зворотний обхід: ";
+    reverseOrder(root);
+    cout << endl;
+    cout << "Чи симетричне дерево? ";
+    if (isSymmetric(root)) cout << "Так"; else cout << "Ні";
+    cout << endl;
+    cout << "Висота дерева: " << height(root) << endl;
+    cout << "Найбільший елемент: " << findMax(root) << endl;
+
+    return 0;
+}
