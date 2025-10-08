@@ -1,0 +1,102 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Student {
+    string name;
+    int grade;
+};
+
+struct Node {
+    Student data;
+    Node* left;
+    Node* right;
+};
+
+Node* createNode(string name, int grade) {
+    Node* n = new Node;
+    n->data.name = name;
+    n->data.grade = grade;
+    n->left = nullptr;
+    n->right = nullptr;
+    return n;
+}
+
+Node* insert(Node* root, string name, int grade) {
+    if (root == nullptr) return createNode(name, grade);
+
+    if (grade < root->data.grade) {
+        root->left = insert(root->left, name, grade);
+    } else {
+        root->right = insert(root->right, name, grade);
+    }
+
+    return root;
+}
+
+Node* findMin(Node* root) {
+    while (root->left != nullptr) root = root->left;
+    return root;
+}
+
+Node* remove(Node* root, int grade) {
+    if (root == nullptr) return nullptr;
+
+    if (grade < root->data.grade) {
+        root->left = remove(root->left, grade);
+    } else if (grade > root->data.grade) {
+        root->right = remove(root->right, grade);
+    } else {
+        if (root->left == nullptr) {
+            Node* temp = root->right;
+            delete root;
+            return temp;
+        } else if (root->right == nullptr) {
+            Node* temp = root->left;
+            delete root;
+            return temp;
+        } else {
+            Node* temp = findMin(root->right);
+            root->data = temp->data;
+            root->right = remove(root->right, temp->data.grade);
+        }
+    }
+    return root;
+}
+
+void printDescending(Node* root) {
+    if (root == nullptr) return;
+    printDescending(root->right);
+    cout << root->data.name << " - " << root->data.grade << endl;
+    printDescending(root->left);
+}
+
+void printBelowGrade(Node* root, int grade) {
+    if (root == nullptr) return;
+    printBelowGrade(root->left, grade);
+    if (root->data.grade < grade) {
+        cout << root->data.name << " - " << root->data.grade << endl;
+    }
+    printBelowGrade(root->right, grade);
+}
+
+int main() {
+    Node* root = nullptr;
+
+    root = insert(root, "Ivan", 90);
+    root = insert(root, "Olena", 75);
+    root = insert(root, "Petro", 85);
+    root = insert(root, "Anna", 65);
+
+    cout << "Студенти від найвищої оцінки:" << endl;
+    printDescending(root);
+
+    cout << "\nСтуденти з оцінкою менше 80:" << endl;
+    printBelowGrade(root, 80);
+
+    root = remove(root, 75);
+    cout << "\nПісля видалення студента з оцінкою 75:" << endl;
+    printDescending(root);
+
+    return 0;
+}
