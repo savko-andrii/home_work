@@ -77,7 +77,6 @@ void printBelowGrade(Node* root, int grade) {
     if (root->data.grade < grade) {
         cout << root->data.name << " - " << root->data.grade << endl;
     }
-    printBelowGrade(root->right, grade);
 }
 
 int main() {
