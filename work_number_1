@@ -1,125 +1,211 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <string>
+#include <cmath>
+using namespace std;
 
-typedef struct Node 
-{
-    int data;
-    struct Node* next;
-} Node;
+// простий вузол дерева
+struct Node {
+    int key;                // ключ (ідентифікатор)
+    string name;            // назва товару
+    double price;           // ціна
+    Node* left;             // лівий син
+    Node* right;            // правий син
+    int height;             // висота для балансування
+};
 
-Node* createList() 
-{
-    Node* head = NULL;
-    Node* tail = NULL;
+// функція створює новий вузол
+Node* newNode(int key, string name, double price) {
+    Node* n = new Node();
+    n->key = key;
+    n->name = name;
+    n->price = price;
+    n->left = n->right = nullptr;
+    n->height = 1;
+    return n;
+}
 
-    int n, x;
-    printf("Скільки елементів буде в списку? ");
-    scanf("%d", &n);
+// висота вузла
+int height(Node* n) {
+    if (n == nullptr) return 0;
+    return n->height;
+}
 
-    for (int i = 0; i < n; i++)
-    {
-        printf("Введіть число: ");
-        scanf("%d", &x);
+// баланс вузла
+int balance(Node* n) {
+    if (n == nullptr) return 0;
+    return height(n->left) - height(n->right);
+}
 
-        Node* p = (Node*)malloc(sizeof(Node));
-        p->data = x;
-        p->next = NULL;
+// праве обертання
+Node* rotateRight(Node* y) {
+    Node* x = y->left;
+    Node* T2 = x->right;
 
-        if (head == NULL)
-        {
-            head = p;
-            tail = p;
+    x->right = y;
+    y->left = T2;
+
+    y->height = max(height(y->left), height(y->right)) + 1;
+    x->height = max(height(x->left), height(x->right)) + 1;
+
+    return x;
+}
+
+// ліве обертання
+Node* rotateLeft(Node* x) {
+    Node* y = x->right;
+    Node* T2 = y->left;
+
+    y->left = x;
+    x->right = T2;
+
+    x->height = max(height(x->left), height(x->right)) + 1;
+    y->height = max(height(y->left), height(y->right)) + 1;
+
+    return y;
+}
+
+// вставка елемента
+Node* insert(Node* root, int key, string name, double price) {
+    if (root == nullptr)
+        return newNode(key, name, price);
+
+    if (key < root->key)
+        root->left = insert(root->left, key, name, price);
+    else if (key > root->key)
+        root->right = insert(root->right, key, name, price);
+    else
+        return root; // дублікат не вставляємо
+
+    root->height = 1 + max(height(root->left), height(root->right));
+
+    int b = balance(root);
+
+    // балансування
+    if (b > 1 && key < root->left->key) // left-left
+        return rotateRight(root);
+    if (b < -1 && key > root->right->key) // right-right
+        return rotateLeft(root);
+    if (b > 1 && key > root->left->key) { // left-right
+        root->left = rotateLeft(root->left);
+        return rotateRight(root);
+    }
+    if (b < -1 && key < root->right->key) { // right-left
+        root->right = rotateRight(root->right);
+        return rotateLeft(root);
+    }
+
+    return root;
+}
+
+// мінімальний елемент
+Node* minNode(Node* node) {
+    Node* cur = node;
+    while (cur && cur->left != nullptr)
+        cur = cur->left;
+    return cur;
+}
+
+// видалення елемента
+Node* deleteNode(Node* root, int key) {
+    if (root == nullptr) return root;
+
+    if (key < root->key)
+        root->left = deleteNode(root->left, key);
+    else if (key > root->key)
+        root->right = deleteNode(root->right, key);
+    else {
+        if (root->left == nullptr || root->right == nullptr) {
+            Node* temp = root->left ? root->left : root->right;
+            if (temp == nullptr) {
+                temp = root;
+                root = nullptr;
+            } else {
+                *root = *temp;
+            }
+            delete temp;
+        } else {
+            Node* temp = minNode(root->right);
+            root->key = temp->key;
+            root->name = temp->name;
+            root->price = temp->price;
+            root->right = deleteNode(root->right, temp->key);
         }
-        else 
-        {
-            tail->next = p;
-            tail = p;
-        }
     }
 
-    return head;
+    if (root == nullptr)
+        return root;
+
+    root->height = 1 + max(height(root->left), height(root->right));
+    int b = balance(root);
+
+    if (b > 1 && balance(root->left) >= 0)
+        return rotateRight(root);
+    if (b > 1 && balance(root->left) < 0) {
+        root->left = rotateLeft(root->left);
+        return rotateRight(root);
+    }
+    if (b < -1 && balance(root->right) <= 0)
+        return rotateLeft(root);
+    if (b < -1 && balance(root->right) > 0) {
+        root->right = rotateRight(root->right);
+        return rotateLeft(root);
+    }
+
+    return root;
 }
 
-void insertAfter(Node* head, int key, int value) 
-{
-    Node* t = head;
-    while (t != NULL)
-    {
-        if (t->data == key)
-        {
-            Node* p = (Node*)malloc(sizeof(Node));
-            p->data = value;
-            p->next = t->next;
-            t->next = p;
-            return;
-        }
-        t = t->next;
-    }
-    printf("Не знайшов елемент %d\n", key);
+// пошук за ключем
+bool search(Node* root, int key) {
+    if (root == nullptr) return false;
+    if (root->key == key) return true;
+    if (key < root->key) return search(root->left, key);
+    return search(root->right, key);
 }
 
-void insertBefore(Node** head, int key, int value)
-{
-    if (*head == NULL) return;
-
-    if ((*head)->data == key) 
-    {
-        Node* p = (Node*)malloc(sizeof(Node));
-        p->data = value;
-        p->next = *head;
-        *head = p;
-        return;
-    }
-
-    Node* t = *head;
-    while (t->next != NULL)
-    {
-        if (t->next->data == key)
-        {
-            Node* p = (Node*)malloc(sizeof(Node));
-            p->data = value;
-            p->next = t->next;
-            t->next = p;
-            return;
-        }
-        t = t->next;
-    }
-    printf("Не знайшов елемент %d\n", key);
-}
-
-void printList(Node* head)
-{
-    Node* t = head;
-    while (t != NULL) 
-    {
-        printf("%d ", t->data);
-        t = t->next;
-    }
-    printf("\n");
-}
-
-void freeList(Node* head) 
-{
-    Node* x;
-    while (head != NULL)
-    {
-        x = head;
-        head = head->next;
-        free(x);
+// обхід у порядку
+void printInOrder(Node* root) {
+    if (root != nullptr) {
+        printInOrder(root->left);
+        cout << root->name << " — " << root->price << endl;
+        printInOrder(root->right);
     }
 }
 
-int main()
-{
-    Node* head = createList();
-    printList(head);
+// пошук найближчої ціни
+Node* findClosest(Node* root, double price, Node* closest = nullptr) {
+    if (root == nullptr) return closest;
+    if (closest == nullptr || fabs(root->price - price) < fabs(closest->price - price))
+        closest = root;
+    if (price < root->price)
+        return findClosest(root->left, price, closest);
+    else
+        return findClosest(root->right, price, closest);
+}
 
-    insertAfter(head, 2, 100);
-    printList(head);
+int main() {
+    Node* root = nullptr;
+    int nextKey = 1;
 
-    insertBefore(&head, 2, 10);
-    printList(head);
-    
-    freeList(head);
+    // додаємо товари
+    root = insert(root, nextKey++, "Молоко", 28.5);
+    root = insert(root, nextKey++, "Хліб", 22.0);
+    root = insert(root, nextKey++, "Сир", 150.0);
+    root = insert(root, nextKey++, "Яблуко", 12.3);
+
+    cout << "Товари у порядку зростання:\n";
+    printInOrder(root);
+
+    cout << "Пошук за ключем (2): ";
+    cout << (search(root, 2) ? "Знайдено\n" : "Не знайдено\n");
+
+    cout << "Видаляємо товар з ключем 1\n";
+    root = deleteNode(root, 1);
+    printInOrder(root);
+
+    cout << "Пошук найближчої ціни до 100:\n";
+    Node* near = findClosest(root, 100);
+    if (near)
+        cout << "Найближче: " << near->name << " — " << near->price << endl;
+
     return 0;
 }
