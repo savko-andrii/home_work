@@ -3,17 +3,15 @@
 #include <cmath>
 using namespace std;
 
-// простий вузол дерева
 struct Node {
-    int key;                // ключ (ідентифікатор)
+    int key;                // ключ 
     string name;            // назва товару
-    double price;           // ціна
+    double price;
     Node* left;             // лівий син
     Node* right;            // правий син
     int height;             // висота для балансування
 };
 
-// функція створює новий вузол
 Node* newNode(int key, string name, double price) {
     Node* n = new Node();
     n->key = key;
