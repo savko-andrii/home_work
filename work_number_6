@@ -184,7 +184,6 @@ int main() {
     Node* root = nullptr;
     int nextKey = 1;
 
-    // додаємо товари
     root = insert(root, nextKey++, "Молоко", 28.5);
     root = insert(root, nextKey++, "Хліб", 22.0);
     root = insert(root, nextKey++, "Сир", 150.0);
