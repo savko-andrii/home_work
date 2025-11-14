@@ -1,125 +1,77 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <deque>
+#include <string>
+using namespace std;
 
-typedef struct Node 
-{
-    int data;
-    struct Node* next;
-} Node;
+class BankQueue {
+private:
+    deque<string> data;
 
-Node* createList() 
-{
-    Node* head = NULL;
-    Node* tail = NULL;
+public:
+    void add(const string& name) {
+        data.push_back("Клієнт: " + name);
+    }
 
-    int n, x;
-    printf("Скільки елементів буде в списку? ");
-    scanf("%d", &n);
+    void addVip(const string& name) {
+        data.push_front("VIP: " + name);
+    }
 
-    for (int i = 0; i < n; i++)
-    {
-        printf("Введіть число: ");
-        scanf("%d", &x);
+    string delite() {
+        if (data.empty()) return "Черга порожня";
+        string first = data.front();
+        data.pop_front();
+        return first;
+    }
 
-        Node* p = (Node*)malloc(sizeof(Node));
-        p->data = x;
-        p->next = NULL;
-
-        if (head == NULL)
-        {
-            head = p;
-            tail = p;
+    void print() {
+        cout << "Черга: \n";
+        for (int i = 0; i < data.size(); i++) {
+            cout << data[i] << endl;
         }
-        else 
-        {
-            tail->next = p;
-            tail = p;
+        cout << endl;
+    }
+
+    bool empty() {
+        return data.empty();
+    }
+};
+
+int main() {
+    BankQueue q;
+
+    int n;
+    cout << "\nВведіть кількість клієнтів: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) {
+        string name;
+        int type;
+        cout << "\nІм'я: ";
+        cin >> name;
+        cout << "Тип (1 = звичайний, 2 = VIP): ";
+        cin >> type;
+
+        if (type == 2) {
+            q.addVip(name);
+        } else {
+            q.add(name);
         }
     }
 
-    return head;
-}
+    cout << "\nПоточна черга:";
+    q.print();
 
-void insertAfter(Node* head, int key, int value) 
-{
-    Node* t = head;
-    while (t != NULL)
-    {
-        if (t->data == key)
-        {
-            Node* p = (Node*)malloc(sizeof(Node));
-            p->data = value;
-            p->next = t->next;
-            t->next = p;
-            return;
-        }
-        t = t->next;
-    }
-    printf("Не знайшов елемент %d\n", key);
-}
+    int k;
+    cout << "\nСкільки клієнтів обслуговуємо? ";
+    cin >> k;
 
-void insertBefore(Node** head, int key, int value)
-{
-    if (*head == NULL) return;
-
-    if ((*head)->data == key) 
-    {
-        Node* p = (Node*)malloc(sizeof(Node));
-        p->data = value;
-        p->next = *head;
-        *head = p;
-        return;
+    cout << "\nОбслуговані клієнти:";
+    for (int i = 0; i < k; i++) {
+        cout << q.delite() << endl;
     }
 
-    Node* t = *head;
-    while (t->next != NULL)
-    {
-        if (t->next->data == key)
-        {
-            Node* p = (Node*)malloc(sizeof(Node));
-            p->data = value;
-            p->next = t->next;
-            t->next = p;
-            return;
-        }
-        t = t->next;
-    }
-    printf("Не знайшов елемент %d\n", key);
-}
+    cout << "\nЧерга після обслуговування:";
+    q.print();
 
-void printList(Node* head)
-{
-    Node* t = head;
-    while (t != NULL) 
-    {
-        printf("%d ", t->data);
-        t = t->next;
-    }
-    printf("\n");
-}
-
-void freeList(Node* head) 
-{
-    Node* x;
-    while (head != NULL)
-    {
-        x = head;
-        head = head->next;
-        free(x);
-    }
-}
-
-int main()
-{
-    Node* head = createList();
-    printList(head);
-
-    insertAfter(head, 2, 100);
-    printList(head);
-
-    insertBefore(&head, 2, 10);
-    printList(head);
-    
-    freeList(head);
     return 0;
 }
