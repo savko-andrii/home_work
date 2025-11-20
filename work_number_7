@@ -1,11 +1,80 @@
 #include <iostream>
-#include <deque>
 #include <string>
 using namespace std;
 
+struct Node {
+    string value;
+    Node* next;
+    Node* prev;
+    Node(string v) : value(v), next(nullptr), prev(nullptr) {}
+};
+
+class List {
+public:
+    Node* head; // frst
+    Node* tail; // lst
+
+    List() : head(nullptr), tail(nullptr) {}
+
+    bool empty() { //чи пустий
+        return head == nullptr;
+    }
+
+    // дод в кінець (звич клієнт)
+    void push_back(string v) {
+        Node* n = new Node(v);
+        if (empty()) {
+            head = tail = n;
+        } else {
+            tail->next = n;
+            n->prev = tail;
+            tail = n;
+        }
+    }
+
+    // дод на початок (VIP)
+    void push_front(string v) {
+        Node* n = new Node(v);
+        if (empty()) {
+            head = tail = n;
+        } else {
+            n->next = head;
+            head->prev = n;
+            head = n;
+        }
+    }
+
+    // видаляємо з початку
+    string pop_front() {
+        if (empty()) return "Черга порожня";
+
+        Node* n = head;
+        string val = n->value;
+
+        if (head == tail) {
+            head = tail = nullptr;
+        } else {
+            head = head->next;
+            head->prev = nullptr;
+        }
+
+        delete n;
+        return val;
+    }
+
+    void print() {
+        Node* cur = head;
+        while (cur != nullptr) {
+            cout << cur->value << endl;
+            cur = cur->next;
+        }
+        cout << endl;
+    }
+};
+
 class BankQueue {
 private:
-    deque<string> data;
+    List data;
 
 public:
     void add(const string& name) {
@@ -17,18 +86,12 @@ public:
     }
 
     string delite() {
-        if (data.empty()) return "Черга порожня";
-        string first = data.front();
-        data.pop_front();
-        return first;
+        return data.pop_front();
     }
 
     void print() {
-        cout << "Черга: \n";
-        for (int i = 0; i < data.size(); i++) {
-            cout << data[i] << endl;
-        }
-        cout << endl;
+        cout << "Черга:\n";
+        data.print();
     }
 
     bool empty() {
@@ -51,26 +114,25 @@ int main() {
         cout << "Тип (1 = звичайний, 2 = VIP): ";
         cin >> type;
 
-        if (type == 2) {
+        if (type == 2)
             q.addVip(name);
-        } else {
+        else
             q.add(name);
-        }
     }
 
-    cout << "\nПоточна черга:";
+    cout << "\nПоточна черга:\n";
     q.print();
 
     int k;
     cout << "\nСкільки клієнтів обслуговуємо? ";
     cin >> k;
 
-    cout << "\nОбслуговані клієнти:";
+    cout << "\nОбслуговані клієнти:\n";
     for (int i = 0; i < k; i++) {
         cout << q.delite() << endl;
     }
 
-    cout << "\nЧерга після обслуговування:";
+    cout << "\nЧерга після обслуговування:\n";
     q.print();
 
     return 0;
