@@ -2,26 +2,39 @@
 #include <string>
 using namespace std;
 
+class Client {
+public:
+    string name;
+    bool isVip;
+
+    Client(string n = "", bool vip = false)
+        : name(n), isVip(vip) {}
+
+    string toString() const {
+        return (isVip ? "VIP: " : "Клієнт: ") + name;
+    }
+};
+
 struct Node {
-    string value;
+    Client value;
     Node* next;
     Node* prev;
-    Node(string v) : value(v), next(nullptr), prev(nullptr) {}
+
+    Node(const Client& v) : value(v), next(nullptr), prev(nullptr) {}
 };
 
 class List {
 public:
-    Node* head; // frst
-    Node* tail; // lst
+    Node* head;
+    Node* tail;
 
     List() : head(nullptr), tail(nullptr) {}
 
-    bool empty() { //чи пустий
+    bool empty() {
         return head == nullptr;
     }
 
-    // дод в кінець (звич клієнт)
-    void push_back(string v) {
+    void push_back(const Client& v) {
         Node* n = new Node(v);
         if (empty()) {
             head = tail = n;
@@ -32,8 +45,7 @@ public:
         }
     }
 
-    // дод на початок (VIP)
-    void push_front(string v) {
+    void push_front(const Client& v) {
         Node* n = new Node(v);
         if (empty()) {
             head = tail = n;
@@ -43,13 +55,12 @@ public:
             head = n;
         }
     }
-
-    // видаляємо з початку
-    string pop_front() {
-        if (empty()) return "Черга порожня";
+//видалення елементу з початку
+    Client pop_front() {
+        if (empty()) return Client("Черга порожня", false);
 
         Node* n = head;
-        string val = n->value;
+        Client val = n->value; //знач вузла
 
         if (head == tail) {
             head = tail = nullptr;
@@ -59,13 +70,13 @@ public:
         }
 
         delete n;
-        return val;
+        return val; 
     }
 
     void print() {
         Node* cur = head;
         while (cur != nullptr) {
-            cout << cur->value << endl;
+            cout << cur->value.toString() << endl;
             cur = cur->next;
         }
         cout << endl;
@@ -78,15 +89,16 @@ private:
 
 public:
     void add(const string& name) {
-        data.push_back("Клієнт: " + name);
+        data.push_back(Client(name, false));
     }
 
     void addVip(const string& name) {
-        data.push_front("VIP: " + name);
+        data.push_front(Client(name, true));
     }
 
     string delite() {
-        return data.pop_front();
+        Client c = data.pop_front();
+        return c.toString();
     }
 
     void print() {
