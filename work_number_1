@@ -1,125 +1,65 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
 
-typedef struct Node 
-{
-    int data;
-    struct Node* next;
-} Node;
+const int INF = 1e9; // "нескінченність" для початкових відстаней
 
-Node* createList() 
-{
-    Node* head = NULL;
-    Node* tail = NULL;
+vector<int> dijkstra(int start, const vector<vector<pair<int,int>>>& graph) {
+    int n = graph.size();
+    vector<int> dist(n, INF); // відстані від стартової вершини
+    priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> pq;
 
-    int n, x;
-    printf("Скільки елементів буде в списку? ");
-    scanf("%d", &n);
+    dist[start] = 0;       
+    pq.push({0, start});   
 
-    for (int i = 0; i < n; i++)
-    {
-        printf("Введіть число: ");
-        scanf("%d", &x);
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (d > dist[u]) continue; // якщо знайдена відстань вже більша то скіп
 
-        Node* p = (Node*)malloc(sizeof(Node));
-        p->data = x;
-        p->next = NULL;
-
-        if (head == NULL)
-        {
-            head = p;
-            tail = p;
-        }
-        else 
-        {
-            tail->next = p;
-            tail = p;
+        for (auto [v, w] : graph[u]) { // проходимо по сусідах
+            if (dist[u] + w < dist[v]) { // якщо знайшли коротший шлях
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
         }
     }
-
-    return head;
+    return dist;
 }
 
-void insertAfter(Node* head, int key, int value) 
-{
-    Node* t = head;
-    while (t != NULL)
-    {
-        if (t->data == key)
-        {
-            Node* p = (Node*)malloc(sizeof(Node));
-            p->data = value;
-            p->next = t->next;
-            t->next = p;
-            return;
+int main() {
+    int n = 7;
+    vector<vector<pair<int,int>>> g(n);
+
+    auto add = [&](int u, int v, int w) {
+        g[u].push_back({v,w});
+        g[v].push_back({u,w}); 
+    };
+
+    add(1,2,1);
+    add(1,2,3);
+    add(1,3,7);
+    add(2,3,1);
+    add(2,3,2);
+    add(2,6,1);
+    add(3,4,2);
+    add(3,5,4);
+    add(3,5,1);
+    add(4,6,2);
+    add(4,6,5);
+    add(4,5,1);
+    add(6,5,3);
+
+    // Дейкстр від кожної вершини
+    for (int start = 1; start <= 6; start++) {
+        vector<int> dist = dijkstra(start, g);
+        cout << "Відстані від вершини " << start << ":\n";
+        for (int v = 1; v <= 6; v++) {
+            if (dist[v] == INF) cout << "  до " << v << ": -1\n";
+            else cout << "  до " << v << ": " << dist[v] << "\n";
         }
-        t = t->next;
-    }
-    printf("Не знайшов елемент %d\n", key);
-}
-
-void insertBefore(Node** head, int key, int value)
-{
-    if (*head == NULL) return;
-
-    if ((*head)->data == key) 
-    {
-        Node* p = (Node*)malloc(sizeof(Node));
-        p->data = value;
-        p->next = *head;
-        *head = p;
-        return;
+        cout << "\n";
     }
 
-    Node* t = *head;
-    while (t->next != NULL)
-    {
-        if (t->next->data == key)
-        {
-            Node* p = (Node*)malloc(sizeof(Node));
-            p->data = value;
-            p->next = t->next;
-            t->next = p;
-            return;
-        }
-        t = t->next;
-    }
-    printf("Не знайшов елемент %d\n", key);
-}
-
-void printList(Node* head)
-{
-    Node* t = head;
-    while (t != NULL) 
-    {
-        printf("%d ", t->data);
-        t = t->next;
-    }
-    printf("\n");
-}
-
-void freeList(Node* head) 
-{
-    Node* x;
-    while (head != NULL)
-    {
-        x = head;
-        head = head->next;
-        free(x);
-    }
-}
-
-int main()
-{
-    Node* head = createList();
-    printList(head);
-
-    insertAfter(head, 2, 100);
-    printList(head);
-
-    insertBefore(&head, 2, 10);
-    printList(head);
-    
-    freeList(head);
     return 0;
 }
